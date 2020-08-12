@@ -16,10 +16,6 @@ struct gelf_msg {
     json_object *json_obj;
 };
 
-#define append_msg(X, Y, Z) _Generic((Z),   \
-      int : sl_msg_append_int,              \
-      char* : sl_msg_append_string)         \
-      ((X), (Y), (Z))
 
 gelf_config_t *sl_gelf_config_init(const char *addr, int port) {
     const char* version = "1.1";
@@ -59,10 +55,9 @@ void sl_msg_append_string(gelf_msg_t *msg, const char *key, const char *value) {
     json_object_put(val_obj);
 }
 
-gelf_msg_t *sl_msg_init(gelf_config_t *gelf_config) {
+gelf_msg_t *sl_msg_init() {
     gelf_msg_t *msg = malloc(sizeof(gelf_msg_t));
     msg->json_obj = json_object_new_object();
-    sl_msg_append_string(msg, "version", gelf_config->version);
     return msg;
 }
 
@@ -72,6 +67,7 @@ void sl_msg_destroy(gelf_msg_t *msg) {
 }
 
 void sl_msg_send(gelf_config_t *gelf_config, gelf_msg_t *msg) {
+    sl_msg_append_string(msg, "version", gelf_config->version);
     const char *msg_str = json_object_to_json_string(msg->json_obj);
     sendto(gelf_config->socket, msg_str, strlen(msg_str), 0, (struct sockaddr *)&gelf_config->servaddr, sizeof(gelf_config->servaddr));
 }

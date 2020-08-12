@@ -22,7 +22,12 @@ typedef struct gelf_msg gelf_msg_t;
 gelf_config_t*  sl_gelf_config_init(const char *addr, int port);
 void            sl_gelf_config_destroy(gelf_config_t *gelf_config);
 
-gelf_msg_t* sl_msg_init(gelf_config_t *gelf_config);
+#define append_msg(X, Y, Z) _Generic((Z),   \
+      int : sl_msg_append_int,              \
+      char* : sl_msg_append_string)         \
+      ((X), (Y), (Z))
+
+gelf_msg_t* sl_msg_init(void);
 void        sl_msg_destroy(gelf_msg_t *msg);
 void        sl_msg_append_int(gelf_msg_t *msg, const char *key, int value);
 void        sl_msg_append_string(gelf_msg_t *msg, const char *key, const char *value);
